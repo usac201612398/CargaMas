@@ -1,4 +1,4 @@
-import mariadb
+#import mariadb
 import pandas as pd
 import psycopg2
 #from datetime import datetime
@@ -10,7 +10,7 @@ archivo = "Informacion.xlsx"
 
 conexion = psycopg2.connect(host="localhost", user="postgres",password="postgres",  database = "Bodega")
 print(conexion)
-conexion.autocommit = True
+#conexion.autocommit = True
 
 Items=pd.read_excel(archivo,"Items")
 Centros=pd.read_excel(archivo,"Centros")
@@ -23,30 +23,34 @@ Categorías=pd.read_excel(archivo,"Categorías")
 #Inventario=pd.read_excel(archivo,"Inventario")
 #Ventas=pd.read_excel(archivo,"Ventas")
 #Compras=pd.read_excel(archivo,"Compras")
+for i in range(len(Categorías)):  
+    cursor= conexion.cursor()
+    Categoría_Código = Categorías.iloc[i]["Categoría (Código)"]
+    Categoría_Centro = str(Categorías.iloc[i]["Categoría (Centro)"])
+    cursor.execute(f"""INSERT INTO T_Categorias (Categoría_Código,Categoría_Centro) VALUES ('{Categoría_Código}','{Categoría_Centro}');""")
+    conexion.commit()
 
-def is_connected(connection):
-    try:
-        connection.ping()
-    except:
-        return False
-    return True
+for i in range(len(Centros)):  
+    cursor= conexion.cursor()
+    Centro = str(Centros.iloc[i]["Centro"])
+    Descripción = str(Centros.iloc[i]["Descripción"])
+    Categoría_Código = Centros.iloc[i]["Categoría (Código)"]
+    Responsable = str(Centros.iloc[i]["Responsable"])
+    Area = str(Centros.iloc[i]["Area"])
+    if str(Responsable) == "nan":
+        Responsable="NULL"
+    if str(Area) == "nan":
+        Area = 0
+    cursor.execute(f"""INSERT INTO T_Centros (Centro,Descripción,Categoría_Código,Responsable,Area_) VALUES ('{Centro}','{Descripción}','{Categoría_Código}','{Responsable}','{Area}');""")
+    conexion.commit()
 
-if is_connected(conexion):
-    print("Conexión realizada con exito")
-
-    for i in range(len(Centros)):  
-        cursor= conexion.cursor()
-        Centro = str(Centros.iloc[i]["Centro"])
-        Descripción = str(Centros.iloc[i]["Descripción"])
-        Categoría_Código = Centros.iloc[i]["Categoría (Código)"]
-        Responsable = str(Centros.iloc[i]["Responsable"])
-        Area = str(Centros.iloc[i]["Area"])
-        if str(Responsable) == "nan":
-            Responsable="NULL"
-        if str(Area) == "nan":
-            Area = 0
-        cursor.execute(f'INSERT INTO T_Centros (Centro,Descripción,Categoría_Código,Responsable,Area_) VALUES ("{Centro}","{Descripción}","{Categoría_Código}","{Responsable}","{Area}");')
-        conexion.commit()
+for i in range(len(Items)):  
+    cursor= conexion.cursor()
+    Código_Artículo = str(Items.iloc[i]["Código Articulo"])
+    Artículo = str(Items.iloc[i]["Artículo"])
+    Unidad_Medida = str(Items.iloc[i]["Unidad Medida"])
+    cursor.execute(f"""INSERT INTO T_Items (Código_Articulo,Artículo,Unidad_Medida) VALUES ('{Código_Artículo}','{Artículo}','{Unidad_Medida}');""")
+    conexion.commit()
 '''
     for i in range(len(Items)):  
         cursor= conexion.cursor()
